@@ -88,6 +88,135 @@ This three-pointer approach provides:
 
 ---
 
+## 📊 Program Flow Diagram
+
+### Main Program Execution Flow
+
+```mermaid
+flowchart TD
+    A["START<br/>main()"] --> B["Initialize<br/>root = createNode<br/>currentDir = root"]
+    B --> C["Display Welcome<br/>Message"]
+    C --> D["Print Menu"]
+    D --> E{User Choice}
+    
+    E -->|1| F["handleCreateFolder()"]
+    E -->|2| G["handleCreateFile()"]
+    E -->|3| H["handleDelete()"]
+    E -->|4| I["handleMove()"]
+    E -->|5/6| J["handleSearch()"]
+    E -->|7| K["handleDisplayTree()"]
+    E -->|8| L["handleChangeDirectory()"]
+    E -->|9| M["handleShowPath()"]
+    E -->|10| N["handleListDirectory()"]
+    E -->|0| O["Exit Program"]
+    
+    F --> F1["Get Folder Name<br/>createFolder()"]
+    F1 --> F2["Check Duplicate<br/>findChild()"]
+    F2 --> F3["Create Node<br/>addChild()"]
+    F3 --> P["Print Success"]
+    
+    G --> G1["Get File Name<br/>createFile()"]
+    G1 --> G2["Check Duplicate<br/>findChild()"]
+    G2 --> G3["Create Node<br/>addChild()"]
+    G3 --> P
+    
+    H --> H1["Get Item Name"]
+    H1 --> H2["Find Node<br/>findChild()"]
+    H2 --> H3["Confirm Delete"]
+    H3 --> H4["Delete Recursive<br/>deleteNodeRecursive()"]
+    H4 --> P
+    
+    I --> I1["Get Source & Dest"]
+    I1 --> I2["Validate Move<br/>Circular Check"]
+    I2 --> I3["Remove From Parent<br/>moveNode()"]
+    I3 --> I4["Add To New Parent<br/>addChild()"]
+    I4 --> P
+    
+    J --> J1["Choose DFS/BFS"]
+    J1 --> J2{Search Type}
+    J2 -->|DFS| J3["searchDFS()"]
+    J2 -->|BFS| J4["searchBFS()"]
+    J3 --> J5["Print Results"]
+    J4 --> J5
+    J5 --> P
+    
+    K --> K1["displayTree()"]
+    K1 --> K2["Traverse Tree<br/>Recursive"]
+    K2 --> K3["Print ASCII<br/>Tree Structure"]
+    K3 --> P
+    
+    L --> L1["Get Directory Name"]
+    L1 --> L2["changeDirectory()"]
+    L2 --> L3["Update currentDir"]
+    L3 --> P
+    
+    M --> M1["getFullPath()"]
+    M1 --> M2["Traverse to Root<br/>via parent pointers"]
+    M2 --> M3["Print Path"]
+    M3 --> P
+    
+    N --> N1["Print Current Dir<br/>Contents"]
+    N1 --> N2["Iterate Children<br/>firstChild + siblings"]
+    N2 --> P
+    
+    P --> Q["Press Enter<br/>to Continue"]
+    Q --> D
+    
+    O --> R["freeTree()"]
+    R --> S["Free All Nodes<br/>Recursively"]
+    S --> T["Print Goodbye"]
+    T --> U["END<br/>Exit with 0"]
+    
+    style A fill:#90EE90
+    style U fill:#FFB6C6
+    style O fill:#FFD700
+```
+
+### Function Call Hierarchy
+
+```
+main()
+├── createNode()           ← Create new nodes
+├── addChild()             ← Add to tree
+├── findChild()            ← Search in children
+├── createFolder()         ← Create folder operation
+│   ├── findChild()
+│   ├── createNode()
+│   └── addChild()
+├── createFile()           ← Create file operation
+│   ├── findChild()
+│   ├── createNode()
+│   └── addChild()
+├── deleteNode()           ← Delete operation
+│   ├── removeFromParent()
+│   └── deleteNodeRecursive()
+├── moveNode()             ← Move operation
+│   ├── removeFromParent()
+│   └── addChild()
+├── searchDFS()            ← Depth-first search
+│   └── getFullPath()
+├── searchBFS()            ← Breadth-first search
+│   └── getFullPath()
+├── displayTree()          ← Display tree structure
+│   └── recursive calls
+├── changeDirectory()      ← Navigate directories
+│   └── findChild()
+├── getFullPath()          ← Build absolute path
+├── printCurrentPath()     ← Print path
+├── handleCreateFolder()   ← Menu handlers
+├── handleCreateFile()
+├── handleDelete()
+├── handleMove()
+├── handleSearch()
+├── handleDisplayTree()
+├── handleChangeDirectory()
+├── handleShowPath()
+├── handleListDirectory()
+└── freeTree()             ← Cleanup memory
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
