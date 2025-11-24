@@ -1,0 +1,29 @@
+# Compiled executables
+file_explorer
+file_explorer.exe
+file_explorer.out
+*.o
+*.a
+
+# Debug files
+*.gdb
+*.dSYM/
+*.su
+*.valgrind
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.tmp
