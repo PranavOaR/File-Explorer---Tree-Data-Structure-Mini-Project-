@@ -317,59 +317,7 @@ void deleteNode(Node *node) {
     }
 }
 
-/**
- * Move a node from one location to another
- * 
- * @param src - Source node to move
- * @param dest - Destination folder
- */
-void moveNode(Node *src, Node *dest) {
-    if (src == NULL || dest == NULL) {
-        printf("❌ Error: Invalid source or destination!\n");
-        return;
-    }
-    
-    // Cannot move root
-    if (src == root) {
-        printf("❌ Error: Cannot move root directory!\n");
-        return;
-    }
-    
-    // Destination must be a folder
-    if (dest->isFile) {
-        printf("❌ Error: Destination must be a folder!\n");
-        return;
-    }
-    
-    // Cannot move into itself or its descendants
-    if (!src->isFile) {
-        Node *temp = dest;
-        while (temp != NULL) {
-            if (temp == src) {
-                printf("❌ Error: Cannot move a folder into itself or its descendants!\n");
-                return;
-            }
-            temp = temp->parent;
-        }
-    }
-    
-    // Check if name already exists in destination
-    if (findChild(dest, src->name) != NULL) {
-        printf("❌ Error: A file or folder with name '%s' already exists in destination!\n", src->name);
-        return;
-    }
-    
-    // Remove from current parent
-    removeFromParent(src);
-    
-    // Reset sibling pointer
-    src->nextSibling = NULL;
-    
-    // Add to new parent
-    addChild(dest, src);
-    
-    printf("✅ '%s' moved successfully!\n", src->name);
-}
+// DFS search
 void searchDFS(Node *node, const char *name, const char *currentPath) {
     if (node == NULL) {
         return;
@@ -398,48 +346,6 @@ void searchDFS(Node *node, const char *name, const char *currentPath) {
     }
 }
 
-/**
- * Search for files/folders using Breadth-First Search
- * 
- * @param root - Root node to start search from
- * @param name - Name to search for (substring match)
- */
-void searchBFS(Node *rootNode, const char *name) {
-    if (rootNode == NULL) {
-        return;
-    }
-    
-    // Simple queue implementation using array
-    Node *queue[1000];
-    int front = 0, rear = 0;
-    
-    // Enqueue root
-    queue[rear++] = rootNode;
-    
-    while (front < rear) {
-        Node *current = queue[front++];
-        
-        // Check if current node matches
-        if (strstr(current->name, name) != NULL) {
-            char *fullPath = getFullPath(current);
-            if (current->isFile) {
-                printf("  📄 %s\n", fullPath);
-            } else {
-                printf("  📁 %s\n", fullPath);
-            }
-            free(fullPath);
-        }
-        
-        // Enqueue children
-        if (!current->isFile) {
-            Node *child = current->firstChild;
-            while (child != NULL) {
-                queue[rear++] = child;
-                child = child->nextSibling;
-            }
-        }
-    }
-}
 void displayTree(Node *node, int depth, int isLast) {
     if (node == NULL) {
         return;

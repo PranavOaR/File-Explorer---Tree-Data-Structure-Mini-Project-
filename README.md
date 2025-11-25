@@ -36,13 +36,10 @@ This project demonstrates the implementation of a **hierarchical file system** u
 | 📁 **Create Folder** | Create new folders with duplicate prevention | O(n) |
 | 📄 **Create File** | Create new files in folders | O(n) |
 | 🗑️ **Delete** | Recursively delete files/folders with confirmation | O(m) |
-| 🚚 **Move** | Move files/folders with circular reference prevention | O(n+m) |
 | 🔍 **DFS Search** | Depth-first search with substring matching | O(n) |
-| 📊 **BFS Search** | Breadth-first search with queue implementation | O(n) |
 | 🌳 **Display Tree** | ASCII tree visualization with icons | O(n) |
 | 📂 **Navigate** | Change directories with `.` and `..` support | O(k) |
 | 📍 **Path Display** | Show absolute path from root | O(h) |
-| 📋 **List Contents** | Display current directory contents sorted | O(n) |
 
 ### Advanced Features
 ✅ Memory leak prevention with proper malloc/free  
@@ -102,13 +99,11 @@ flowchart TD
     E -->|1| F["handleCreateFolder()"]
     E -->|2| G["handleCreateFile()"]
     E -->|3| H["handleDelete()"]
-    E -->|4| I["handleMove()"]
-    E -->|5/6| J["handleSearch()"]
-    E -->|7| K["handleDisplayTree()"]
-    E -->|8| L["handleChangeDirectory()"]
-    E -->|9| M["handleShowPath()"]
-    E -->|10| N["handleListDirectory()"]
-    E -->|0| O["Exit Program"]
+    E -->|4| I["handleSearch()"]
+    E -->|5| J["handleDisplayTree()"]
+    E -->|6| K["handleChangeDirectory()"]
+    E -->|7| L["handleShowPath()"]
+    E -->|0| M["Exit Program"]
     
     F --> F1["Get Folder Name<br/>createFolder()"]
     F1 --> F2["Check Duplicate<br/>findChild()"]
@@ -126,50 +121,37 @@ flowchart TD
     H3 --> H4["Delete Recursive<br/>deleteNodeRecursive()"]
     H4 --> P
     
-    I --> I1["Get Source & Dest"]
-    I1 --> I2["Validate Move<br/>Circular Check"]
-    I2 --> I3["Remove From Parent<br/>moveNode()"]
-    I3 --> I4["Add To New Parent<br/>addChild()"]
-    I4 --> P
+    I --> I1["Enter Search Term"]
+    I1 --> I2["searchDFS()"]
+    I2 --> I3["Print Results"]
+    I3 --> P
     
-    J --> J1["Choose DFS/BFS"]
-    J1 --> J2{Search Type}
-    J2 -->|DFS| J3["searchDFS()"]
-    J2 -->|BFS| J4["searchBFS()"]
-    J3 --> J5["Print Results"]
-    J4 --> J5
-    J5 --> P
+    J --> J1["displayTree()"]
+    J1 --> J2["Traverse Tree<br/>Recursive"]
+    J2 --> J3["Print ASCII<br/>Tree Structure"]
+    J3 --> P
     
-    K --> K1["displayTree()"]
-    K1 --> K2["Traverse Tree<br/>Recursive"]
-    K2 --> K3["Print ASCII<br/>Tree Structure"]
+    K --> K1["Get Directory Name"]
+    K1 --> K2["changeDirectory()"]
+    K2 --> K3["Update currentDir"]
     K3 --> P
     
-    L --> L1["Get Directory Name"]
-    L1 --> L2["changeDirectory()"]
-    L2 --> L3["Update currentDir"]
+    L --> L1["getFullPath()"]
+    L1 --> L2["Traverse to Root<br/>via parent pointers"]
+    L2 --> L3["Print Path"]
     L3 --> P
-    
-    M --> M1["getFullPath()"]
-    M1 --> M2["Traverse to Root<br/>via parent pointers"]
-    M2 --> M3["Print Path"]
-    M3 --> P
-    
-    N --> N1["Print Current Dir<br/>Contents"]
-    N1 --> N2["Iterate Children<br/>firstChild + siblings"]
-    N2 --> P
     
     P --> Q["Press Enter<br/>to Continue"]
     Q --> D
     
-    O --> R["freeTree()"]
+    M --> R["freeTree()"]
     R --> S["Free All Nodes<br/>Recursively"]
     S --> T["Print Goodbye"]
     T --> U["END<br/>Exit with 0"]
     
     style A fill:#90EE90
     style U fill:#FFB6C6
-    style O fill:#FFD700
+    style M fill:#FFD700
 ```
 
 ### Function Call Hierarchy
@@ -190,12 +172,7 @@ main()
 ├── deleteNode()           ← Delete operation
 │   ├── removeFromParent()
 │   └── deleteNodeRecursive()
-├── moveNode()             ← Move operation
-│   ├── removeFromParent()
-│   └── addChild()
 ├── searchDFS()            ← Depth-first search
-│   └── getFullPath()
-├── searchBFS()            ← Breadth-first search
 │   └── getFullPath()
 ├── displayTree()          ← Display tree structure
 │   └── recursive calls
@@ -206,12 +183,10 @@ main()
 ├── handleCreateFolder()   ← Menu handlers
 ├── handleCreateFile()
 ├── handleDelete()
-├── handleMove()
 ├── handleSearch()
 ├── handleDisplayTree()
 ├── handleChangeDirectory()
 ├── handleShowPath()
-├── handleListDirectory()
 └── freeTree()             ← Cleanup memory
 ```
 
@@ -273,13 +248,10 @@ Current Directory: /root
 1.  Create Folder
 2.  Create File
 3.  Delete
-4.  Move
-5.  Search (DFS)
-6.  Search (BFS)
-7.  Display Tree
-8.  Change Directory
-9.  Show Current Path
-10. List Current Directory
+4.  Search (DFS)
+5.  Display Tree
+6.  Change Directory
+7.  Show Current Path
 0.  Exit
 ========================================
 ```
@@ -291,13 +263,10 @@ Current Directory: /root
 | `1` | Create Folder | Creates `Documents` folder |
 | `2` | Create File | Creates `readme.txt` file |
 | `3` | Delete | Deletes file/folder recursively |
-| `4` | Move | Moves file between folders |
-| `5` | Search DFS | Finds all files containing search term |
-| `6` | Search BFS | Level-by-level search |
-| `7` | Display Tree | Shows full directory structure |
-| `8` | Change Dir | Navigate to parent/child/root |
-| `9` | Show Path | Display current absolute path |
-| `10` | List Dir | Show current directory contents |
+| `4` | Search DFS | Finds all files containing search term |
+| `5` | Display Tree | Shows full directory structure |
+| `6` | Change Dir | Navigate to parent/child/root |
+| `7` | Show Path | Display current absolute path |
 | `0` | Exit | Gracefully exit with cleanup |
 
 ---
