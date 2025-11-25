@@ -21,7 +21,7 @@ This project demonstrates the implementation of a **hierarchical file system** u
 
 ### ✨ Highlights
 - 🎯 **Complete File System Simulation** with folder and file management
-- 🔍 **Dual Search Algorithms** - DFS and BFS implementations
+- 🔍 **DFS Search Algorithm** - Depth-first traversal implementation
 - 🌳 **ASCII Tree Visualization** with beautiful formatting
 - 🛡️ **Robust Error Handling** and input validation
 - 💾 **Dynamic Memory Management** with proper cleanup
@@ -330,9 +330,6 @@ Enter directory name: ..
 ```bash
 Enter your choice: 5
 🔍 SEARCH
-1. DFS (Depth-First Search)
-2. BFS (Breadth-First Search)
-Choose search type: 1
 Enter search term: doc
 
 🔍 Searching for 'doc'...
@@ -342,20 +339,18 @@ Using DFS:
   📄 /root/Documents/backup/old.doc
 ```
 
-### Example 4: Move and Delete
+### Example 4: Delete and Navigate
 
 ```bash
-Enter your choice: 4
-🚚 MOVE
-Enter name of file/folder to move: readme.txt
-Enter destination folder name: Documents
-✅ 'readme.txt' moved successfully!
-
 Enter your choice: 3
 🗑️  DELETE
 Enter name of file/folder to delete: Pictures
 ⚠️  This will delete the folder and all its contents. Continue? (y/n): y
 ✅ Folder 'Pictures' and all its contents deleted successfully!
+
+Enter your choice: 6
+Enter folder name to navigate to: Documents
+✅ Navigated to 'Documents'
 ```
 
 ---
@@ -409,7 +404,6 @@ Using DFS:
 |:---------|:----------------|
 | Create duplicate folder | ❌ Error: Already exists |
 | Delete current directory | ❌ Error: Cannot delete current |
-| Move folder into itself | ❌ Error: Circular reference |
 | Create file in a file | ❌ Error: Invalid parent |
 | Navigate to non-existent folder | ❌ Error: Not found |
 
@@ -433,21 +427,19 @@ Create 100 files across multiple folders
 ┌─────────────────────┬──────────────┬──────────────┐
 │ Operation           │ Time         │ Space        │
 ├─────────────────────┼──────────────┼──────────────┤
-│ Create              │ O(n)         │ O(1)         │
+│ Create Folder       │ O(n)         │ O(1)         │
+│ Create File         │ O(n)         │ O(1)         │
 │ Delete              │ O(m)         │ O(1)         │
-│ Move                │ O(n + m)     │ O(1)         │
 │ Search (DFS)        │ O(n)         │ O(h)         │
-│ Search (BFS)        │ O(n)         │ O(w)         │
 │ Display Tree        │ O(n)         │ O(h)         │
+│ Change Directory    │ O(k)         │ O(1)         │
 │ Get Path            │ O(h)         │ O(h)         │
-│ Navigate            │ O(k)         │ O(1)         │
 └─────────────────────┴──────────────┴──────────────┘
 
 Where:
 n = number of siblings to check
 m = nodes in subtree
 h = height of tree
-w = maximum width of tree
 k = children count
 ```
 
@@ -479,34 +471,51 @@ void searchDFS(Node *node, const char *name, const char *currentPath) {
 - Finds deep paths first
 - O(n) time, O(h) space
 
-#### 2. Breadth-First Search (Iterative)
+#### 2. Recursive Tree Display
 ```c
-void searchBFS(Node *root, const char *name) {
-    Node *queue[1000];
-    int front = 0, rear = 0;
+void displayTree(Node *node, int depth, int isLast) {
+    // Print indentation and connectors
+    for (int i = 0; i < depth - 1; i++) {
+        printf("│   ");
+    }
     
-    queue[rear++] = root;
+    // Print node with icon
+    printf("%s %s\n", icon, node->name);
     
-    while (front < rear) {
-        Node *current = queue[front++];
-        
-        // Process current
-        if (match found) {
-            printf("  %s\n", path);
-        }
-        
-        // Enqueue children
-        for (each child) {
-            queue[rear++] = child;
+    // Recursively display children
+    if (!node->isFile) {
+        Node *child = node->firstChild;
+        while (child != NULL) {
+            displayTree(child, depth + 1, isLastChild);
+            child = child->nextSibling;
         }
     }
 }
 ```
 **Characteristics:**
-- Level-order traversal
-- Queue-based implementation
-- Finds wider paths first
-- O(n) time, O(w) space
+- Pre-order traversal
+- Beautiful ASCII tree visualization
+- O(n) time, O(h) space
+
+#### 3. Path Building
+```c
+char* getFullPath(Node *node) {
+    char temp[MAX_PATH_LENGTH] = "";
+    Node *current = node;
+    
+    // Build path by traversing up to root
+    while (current != NULL) {
+        sprintf(temp, "/%s%s", current->name, temp);
+        current = current->parent;
+    }
+    
+    return path;
+}
+```
+**Characteristics:**
+- Upward traversal via parent pointers
+- Builds complete path from root
+- O(h) time, O(h) space
 
 ---
 
@@ -514,66 +523,55 @@ void searchBFS(Node *root, const char *name) {
 
 ```
 File-Explorer-Tree/
-├── 📄 file_explorer.c        # Main implementation (29KB)
+├── 📄 file_explorer.c        # Main implementation (~750 lines)
 ├── 📄 README.md              # This file
-├── 📄 README_C.md            # Detailed documentation
 ├── 📄 TEST_SCENARIOS.md      # Test cases and examples
-└── 📄 LICENSE                # MIT License
+└── 📄 .gitignore             # Git ignore rules
 ```
 
 ### Code Structure
 
-```c
+```
 file_explorer.c
+
+├── Node Management
+│   ├── createNode()
+│   ├── addChild()
+│   └── findChild()
 │
-├── INCLUDES & CONSTANTS
-│   └── stdio.h, stdlib.h, string.h, stdbool.h
+├── File Operations
+│   ├── createFolder()
+│   ├── createFile()
+│   ├── deleteNode()
+│   └── deleteNodeRecursive()
 │
-├── STRUCTURE DEFINITIONS
-│   └── Node struct (3-pointer tree)
+├── Search Operations
+│   └── searchDFS()
 │
-├── GLOBAL VARIABLES
-│   ├── Node *root
-│   └── Node *currentDir
+├── Display Operations
+│   ├── displayTree()
+│   ├── getFullPath()
+│   └── printCurrentPath()
 │
-├── CORE FUNCTIONS
-│   ├── Node Management
-│   │   ├── createNode()
-│   │   ├── addChild()
-│   │   └── findChild()
-│   │
-│   ├── File Operations
-│   │   ├── createFolder()
-│   │   ├── createFile()
-│   │   ├── deleteNode()
-│   │   └── moveNode()
-│   │
-│   ├── Search Operations
-│   │   ├── searchDFS()
-│   │   └── searchBFS()
-│   │
-│   ├── Display Operations
-│   │   ├── displayTree()
-│   │   ├── getFullPath()
-│   │   └── printCurrentPath()
-│   │
-│   └── Navigation
-│       └── changeDirectory()
+├── Navigation
+│   └── changeDirectory()
 │
-├── MENU FUNCTIONS
+├── Utility Functions
+│   ├── clearInputBuffer()
+│   ├── freeTree()
+│   └── countChildren()
+│
+├── Menu Functions
 │   ├── printMenu()
 │   ├── handleCreateFolder()
 │   ├── handleCreateFile()
 │   ├── handleDelete()
-│   ├── handleMove()
 │   ├── handleSearch()
 │   ├── handleDisplayTree()
 │   ├── handleChangeDirectory()
-│   ├── handleShowPath()
-│   └── handleListDirectory()
+│   └── handleShowPath()
 │
-└── MAIN FUNCTION
-    └── main() - Menu loop and program flow
+└── main()
 ```
 
 ---
@@ -585,12 +583,10 @@ This project covers essential data structures and algorithms:
 ### Data Structures
 - ✅ **Tree (N-ary)** - Hierarchical parent-child relationships
 - ✅ **Linked List** - Sibling traversal using next pointers
-- ✅ **Queue** - For BFS implementation
 
 ### Algorithms
 - ✅ **Depth-First Search (DFS)** - Recursive tree traversal
-- ✅ **Breadth-First Search (BFS)** - Level-order traversal
-- ✅ **Tree Traversal** - Multiple patterns (pre-order, level-order)
+- ✅ **Tree Traversal** - Pre-order pattern for display
 - ✅ **Recursive Algorithms** - Tree display, deletion
 
 ### Programming Concepts
@@ -619,10 +615,6 @@ The system robustly handles error conditions:
   → Cannot delete current directory
   → Cannot delete directory ancestors
   
-✓ Circular Reference Prevention
-  → Cannot move folder into itself
-  → Cannot move into descendants
-  
 ✓ Input Validation
   → Validates all scanf inputs
   → Clears input buffer after errors
@@ -642,7 +634,7 @@ Potential features for future versions:
 ### 1. Undo/Redo Functionality
 ```c
 typedef struct {
-    enum { CREATE, DELETE, MOVE } type;
+    enum { CREATE, DELETE } type;
     Node *node;
     Node *oldParent;
 } Operation;
@@ -700,10 +692,9 @@ name  → Go to child folder
 3. Create File "note.txt"
 4. Go back (cd ..)
 5. Display tree (7)
-6. Search (5 or 6)
-7. Move file (4)
-8. Delete (3)
-9. Exit (0)
+6. Search (5)
+7. Delete (3)
+8. Exit (0)
 ```
 
 ### Icon Guide
@@ -712,7 +703,6 @@ name  → Go to child folder
 📄  File
 📂  Current directory
 🗑️  Delete operation
-🚚  Move operation
 🔍  Search operation
 🌳  Tree display
 ✅  Success message
@@ -726,7 +716,7 @@ name  → Go to child folder
 
 ### Tree Data Structure
 - [GeeksforGeeks - Trees](https://www.geeksforgeeks.org/binary-tree-data-structure/)
-- [Tree Traversals (DFS and BFS)](https://www.geeksforgeeks.org/tree-traversals-inorder-preorder-and-postorder/)
+- [Tree Traversals (Pre-order, In-order, Post-order)](https://www.geeksforgeeks.org/tree-traversals-inorder-preorder-and-postorder/)
 
 ### C Programming
 - [Dynamic Memory Allocation in C](https://www.geeksforgeeks.org/malloc-vs-calloc-in-c/)
