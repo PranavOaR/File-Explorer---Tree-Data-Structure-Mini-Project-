@@ -1,23 +1,5 @@
-/*
-================================================================================
-    FILE EXPLORER SYSTEM - C Implementation with Tree Data Structure
-================================================================================
-    
-    Description:
-        A menu-driven file system simulator using a tree structure to represent
-        hierarchical folders and files. Supports create, delete, move, search,
-        and display operations.
-    
-    Data Structure:
-        - Tree with parent-child-sibling relationships
-        - Each node represents a file or folder
-        - Dynamic memory allocation for nodes
-    
-    Author: REVA University - Data Structures Project
-    Date: October 2025
-    
-================================================================================
-*/
+// File Explorer System - C Implementation with Tree Data Structure
+// Author: REVA University - October 2025
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,22 +16,13 @@
 ================================================================================
 */
 
-/**
- * Node structure representing a file or folder in the file system tree
- * 
- * Structure:
- *   - name: Name of the file or folder
- *   - isFile: 1 for file, 0 for folder
- *   - parent: Pointer to parent node
- *   - firstChild: Pointer to first child (for folders)
- *   - nextSibling: Pointer to next sibling node
- */
+// Node structure for file system tree
 typedef struct Node {
-    char name[MAX_NAME_LENGTH];  // Name of file or folder
-    int isFile;                   // 1 = file, 0 = folder
-    struct Node *parent;          // Pointer to parent node
-    struct Node *firstChild;      // First child (for folders)
-    struct Node *nextSibling;     // Next sibling in same directory
+    char name[MAX_NAME_LENGTH];
+    int isFile;
+    struct Node *parent;
+    struct Node *firstChild;
+    struct Node *nextSibling;
 } Node;
 
 // Global pointer to root and current directory
@@ -72,11 +45,9 @@ void createFolder(Node *parent, const char *name);
 void createFile(Node *parent, const char *name);
 void deleteNode(Node *node);
 void deleteNodeRecursive(Node *node);
-void moveNode(Node *src, Node *dest);
 
 // Search operations
 void searchDFS(Node *node, const char *name, const char *currentPath);
-void searchBFS(Node *root, const char *name);
 
 // Display operations
 void displayTree(Node *node, int depth, int isLast);
@@ -96,7 +67,6 @@ void printMenu();
 void handleCreateFolder();
 void handleCreateFile();
 void handleDelete();
-void handleMove();
 void handleSearch();
 void handleDisplayTree();
 void handleChangeDirectory();
@@ -108,15 +78,8 @@ void handleShowPath();
 ================================================================================
 */
 
-/**
- * Create a new node (file or folder)
- * 
- * @param name - Name of the file or folder
- * @param isFile - 1 for file, 0 for folder
- * @return Pointer to the newly created node
- */
+// Create a new node
 Node* createNode(const char *name, int isFile) {
-    // Allocate memory for new node
     Node *newNode = (Node*)malloc(sizeof(Node));
     
     if (newNode == NULL) {
@@ -124,9 +87,8 @@ Node* createNode(const char *name, int isFile) {
         return NULL;
     }
     
-    // Initialize node fields
     strncpy(newNode->name, name, MAX_NAME_LENGTH - 1);
-    newNode->name[MAX_NAME_LENGTH - 1] = '\0'; // Ensure null termination
+    newNode->name[MAX_NAME_LENGTH - 1] = '\0';
     newNode->isFile = isFile;
     newNode->parent = NULL;
     newNode->firstChild = NULL;
@@ -135,34 +97,24 @@ Node* createNode(const char *name, int isFile) {
     return newNode;
 }
 
-/**
- * Add a child node to a parent node
- * Maintains sorted order (folders first, then alphabetically)
- * 
- * @param parent - Parent node
- * @param child - Child node to add
- */
+// Add child to parent with sorted order
 void addChild(Node *parent, Node *child) {
     if (parent == NULL || child == NULL) {
         printf("❌ Error: Invalid parent or child node!\n");
         return;
     }
     
-    // Set parent reference
     child->parent = parent;
     
-    // If parent has no children, add as first child
     if (parent->firstChild == NULL) {
         parent->firstChild = child;
         return;
     }
     
-    // Insert in sorted order: folders first, then alphabetically
     Node *current = parent->firstChild;
     Node *previous = NULL;
     
     while (current != NULL) {
-        // If child is folder and current is file, insert before
         if (!child->isFile && current->isFile) {
             if (previous == NULL) {
                 child->nextSibling = parent->firstChild;
@@ -174,7 +126,6 @@ void addChild(Node *parent, Node *child) {
             return;
         }
         
-        // If same type, sort alphabetically
         if (child->isFile == current->isFile && strcmp(child->name, current->name) < 0) {
             if (previous == NULL) {
                 child->nextSibling = parent->firstChild;
@@ -190,17 +141,10 @@ void addChild(Node *parent, Node *child) {
         current = current->nextSibling;
     }
     
-    // Add at the end
     previous->nextSibling = child;
 }
 
-/**
- * Find a child node by name
- * 
- * @param parent - Parent node to search in
- * @param name - Name of child to find
- * @return Pointer to child node, or NULL if not found
- */
+// Find child by name
 Node* findChild(Node *parent, const char *name) {
     if (parent == NULL || name == NULL) {
         return NULL;
@@ -218,12 +162,7 @@ Node* findChild(Node *parent, const char *name) {
     return NULL;
 }
 
-/**
- * Count number of children a node has
- * 
- * @param parent - Parent node
- * @return Number of children
- */
+// Count children
 int countChildren(Node *parent) {
     if (parent == NULL) return 0;
     
@@ -244,14 +183,8 @@ int countChildren(Node *parent) {
 ================================================================================
 */
 
-/**
- * Create a new folder in the given parent directory
- * 
- * @param parent - Parent directory
- * @param name - Name of the folder to create
- */
+// Create a new folder
 void createFolder(Node *parent, const char *name) {
-    // Check if parent is valid and is a folder
     if (parent == NULL) {
         printf("❌ Error: Invalid parent directory!\n");
         return;
@@ -262,32 +195,23 @@ void createFolder(Node *parent, const char *name) {
         return;
     }
     
-    // Check if name already exists
     if (findChild(parent, name) != NULL) {
         printf("❌ Error: A file or folder with name '%s' already exists!\n", name);
         return;
     }
     
-    // Create new folder node
     Node *newFolder = createNode(name, 0);
     if (newFolder == NULL) {
         return;
     }
     
-    // Add to parent
     addChild(parent, newFolder);
     
     printf("✅ Folder '%s' created successfully!\n", name);
 }
 
-/**
- * Create a new file in the given parent directory
- * 
- * @param parent - Parent directory
- * @param name - Name of the file to create
- */
+// Create a new file
 void createFile(Node *parent, const char *name) {
-    // Check if parent is valid and is a folder
     if (parent == NULL) {
         printf("❌ Error: Invalid parent directory!\n");
         return;
@@ -298,29 +222,22 @@ void createFile(Node *parent, const char *name) {
         return;
     }
     
-    // Check if name already exists
     if (findChild(parent, name) != NULL) {
         printf("❌ Error: A file or folder with name '%s' already exists!\n", name);
         return;
     }
     
-    // Create new file node
     Node *newFile = createNode(name, 1);
     if (newFile == NULL) {
         return;
     }
     
-    // Add to parent
     addChild(parent, newFile);
     
     printf("✅ File '%s' created successfully!\n", name);
 }
 
-/**
- * Remove a node from its parent's child list
- * 
- * @param node - Node to remove
- */
+// Remove node from parent's child list
 void removeFromParent(Node *node) {
     if (node == NULL || node->parent == NULL) {
         return;
@@ -328,13 +245,11 @@ void removeFromParent(Node *node) {
     
     Node *parent = node->parent;
     
-    // If node is first child
     if (parent->firstChild == node) {
         parent->firstChild = node->nextSibling;
         return;
     }
     
-    // Find previous sibling
     Node *current = parent->firstChild;
     while (current != NULL && current->nextSibling != node) {
         current = current->nextSibling;
@@ -345,17 +260,12 @@ void removeFromParent(Node *node) {
     }
 }
 
-/**
- * Delete a node recursively (for folders with contents)
- * 
- * @param node - Node to delete
- */
+// Delete node recursively
 void deleteNodeRecursive(Node *node) {
     if (node == NULL) {
         return;
     }
     
-    // Recursively delete all children
     Node *child = node->firstChild;
     while (child != NULL) {
         Node *nextChild = child->nextSibling;
@@ -363,34 +273,26 @@ void deleteNodeRecursive(Node *node) {
         child = nextChild;
     }
     
-    // Free the node itself
     free(node);
 }
 
-/**
- * Delete a file or folder
- * 
- * @param node - Node to delete
- */
+// Delete a file or folder
 void deleteNode(Node *node) {
     if (node == NULL) {
         printf("❌ Error: Node not found!\n");
         return;
     }
     
-    // Cannot delete root
     if (node == root) {
         printf("❌ Error: Cannot delete root directory!\n");
         return;
     }
     
-    // Cannot delete current directory
     if (node == currentDir) {
         printf("❌ Error: Cannot delete current directory! Navigate to parent first.\n");
         return;
     }
     
-    // Check if trying to delete an ancestor of current directory
     Node *temp = currentDir;
     while (temp != NULL) {
         if (temp == node) {
@@ -400,10 +302,8 @@ void deleteNode(Node *node) {
         temp = temp->parent;
     }
     
-    // Remove from parent's child list
     removeFromParent(node);
     
-    // Delete recursively
     char nodeName[MAX_NAME_LENGTH];
     strcpy(nodeName, node->name);
     int wasFile = node->isFile;
@@ -470,20 +370,6 @@ void moveNode(Node *src, Node *dest) {
     
     printf("✅ '%s' moved successfully!\n", src->name);
 }
-
-/*
-================================================================================
-                            SEARCH OPERATIONS
-================================================================================
-*/
-
-/**
- * Search for files/folders using Depth-First Search
- * 
- * @param node - Current node in traversal
- * @param name - Name to search for (substring match)
- * @param currentPath - Current path in traversal
- */
 void searchDFS(Node *node, const char *name, const char *currentPath) {
     if (node == NULL) {
         return;
@@ -554,20 +440,6 @@ void searchBFS(Node *rootNode, const char *name) {
         }
     }
 }
-
-/*
-================================================================================
-                            DISPLAY OPERATIONS
-================================================================================
-*/
-
-/**
- * Display the directory tree with ASCII art
- * 
- * @param node - Node to display
- * @param depth - Current depth in tree
- * @param isLast - Whether this is the last sibling
- */
 void displayTree(Node *node, int depth, int isLast) {
     if (node == NULL) {
         return;
@@ -640,11 +512,6 @@ char* getFullPath(Node *node) {
     return path;
 }
 
-/**
- * Print the current path
- * 
- * @param node - Node to print path for
- */
 void printCurrentPath(Node *node) {
     char *path = getFullPath(node);
     if (path != NULL) {
@@ -659,19 +526,13 @@ void printCurrentPath(Node *node) {
 ================================================================================
 */
 
-/**
- * Change the current directory
- * 
- * @param current - Pointer to current directory pointer
- * @param name - Name of directory to change to, or ".." for parent
- */
+// Change directory
 void changeDirectory(Node **current, const char *name) {
     if (current == NULL || *current == NULL) {
         printf("❌ Error: Invalid current directory!\n");
         return;
     }
     
-    // Handle parent directory
     if (strcmp(name, "..") == 0) {
         if ((*current)->parent != NULL) {
             *current = (*current)->parent;
@@ -684,7 +545,6 @@ void changeDirectory(Node **current, const char *name) {
         return;
     }
     
-    // Handle root
     if (strcmp(name, "/") == 0) {
         *current = root;
         printf("✅ Changed to root directory: ");
@@ -693,7 +553,6 @@ void changeDirectory(Node **current, const char *name) {
         return;
     }
     
-    // Find child folder
     Node *child = findChild(*current, name);
     
     if (child == NULL) {
@@ -718,25 +577,18 @@ void changeDirectory(Node **current, const char *name) {
 ================================================================================
 */
 
-/**
- * Clear input buffer
- */
+// Clear input buffer
 void clearInputBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-/**
- * Free the entire tree recursively
- * 
- * @param node - Root node to free
- */
+// Free tree recursively
 void freeTree(Node *node) {
     if (node == NULL) {
         return;
     }
     
-    // Recursively free all children
     Node *child = node->firstChild;
     while (child != NULL) {
         Node *nextChild = child->nextSibling;
@@ -744,7 +596,6 @@ void freeTree(Node *node) {
         child = nextChild;
     }
     
-    // Free the node itself
     free(node);
 }
 
@@ -769,13 +620,10 @@ void printMenu() {
     printf("1. Create Folder\n");
     printf("2. Create File\n");
     printf("3. Delete\n");
-    printf("4. Move\n");
-    printf("5. Search (DFS)\n");
-    printf("6. Search (BFS)\n");
-    printf("7. Display Tree\n");
-    printf("8. Change Directory\n");
-    printf("9. Show Current Path\n");
-    printf("10. List Current Directory\n");
+    printf("4. Search (DFS)\n");
+    printf("5. Display Tree\n");
+    printf("6. Change Directory\n");
+    printf("7. Show Current Path\n");
     printf("0. Exit\n");
     printf("========================================\n");
 }
@@ -858,77 +706,12 @@ void handleDelete() {
 }
 
 /**
- * Handle move operation
- */
-void handleMove() {
-    char srcName[MAX_NAME_LENGTH];
-    char destPath[MAX_NAME_LENGTH];
-    
-    printf("\n🚚 MOVE\n");
-    printf("Enter name of file/folder to move: ");
-    
-    if (scanf("%49s", srcName) != 1) {
-        printf("❌ Error: Invalid input!\n");
-        clearInputBuffer();
-        return;
-    }
-    
-    printf("Enter destination folder name (or '..' for parent, '/' for root): ");
-    
-    if (scanf("%49s", destPath) != 1) {
-        printf("❌ Error: Invalid input!\n");
-        clearInputBuffer();
-        return;
-    }
-    clearInputBuffer();
-    
-    // Find source node
-    Node *srcNode = findChild(currentDir, srcName);
-    if (srcNode == NULL) {
-        printf("❌ Error: '%s' not found in current directory!\n", srcName);
-        return;
-    }
-    
-    // Find destination node
-    Node *destNode;
-    if (strcmp(destPath, "..") == 0) {
-        destNode = currentDir->parent;
-        if (destNode == NULL) {
-            printf("❌ Error: Already at root!\n");
-            return;
-        }
-    } else if (strcmp(destPath, "/") == 0) {
-        destNode = root;
-    } else {
-        destNode = findChild(currentDir, destPath);
-        if (destNode == NULL) {
-            printf("❌ Error: Destination '%s' not found!\n", destPath);
-            return;
-        }
-    }
-    
-    moveNode(srcNode, destNode);
-}
-
-/**
- * Handle DFS search
+ * Handle search
  */
 void handleSearch() {
     char name[MAX_NAME_LENGTH];
-    int searchType;
     
-    printf("\n🔍 SEARCH\n");
-    printf("1. DFS (Depth-First Search)\n");
-    printf("2. BFS (Breadth-First Search)\n");
-    printf("Choose search type: ");
-    
-    if (scanf("%d", &searchType) != 1) {
-        printf("❌ Error: Invalid input!\n");
-        clearInputBuffer();
-        return;
-    }
-    clearInputBuffer();
-    
+    printf("\n🔍 DFS SEARCH\n");
     printf("Enter search term: ");
     
     if (scanf("%49s", name) != 1) {
@@ -939,16 +722,7 @@ void handleSearch() {
     clearInputBuffer();
     
     printf("\n🔍 Searching for '%s'...\n", name);
-    
-    if (searchType == 1) {
-        printf("Using DFS:\n");
-        searchDFS(root, name, "");
-    } else if (searchType == 2) {
-        printf("Using BFS:\n");
-        searchBFS(root, name);
-    } else {
-        printf("❌ Invalid search type!\n");
-    }
+    searchDFS(root, name, "");
 }
 
 /**
@@ -988,32 +762,6 @@ void handleShowPath() {
     printf("Full path: ");
     printCurrentPath(currentDir);
     printf("\n");
-}
-
-/**
- * List contents of current directory
- */
-void handleListDirectory() {
-    printf("\n📋 CONTENTS OF CURRENT DIRECTORY\n");
-    printf("========================================\n");
-    
-    if (currentDir->firstChild == NULL) {
-        printf("(Empty directory)\n");
-    } else {
-        Node *child = currentDir->firstChild;
-        int count = 1;
-        
-        while (child != NULL) {
-            if (child->isFile) {
-                printf("%d. 📄 %s\n", count++, child->name);
-            } else {
-                printf("%d. 📁 %s/\n", count++, child->name);
-            }
-            child = child->nextSibling;
-        }
-    }
-    
-    printf("========================================\n");
 }
 
 /*
@@ -1069,28 +817,19 @@ int main() {
                 break;
             
             case 4:
-                handleMove();
-                break;
-            
-            case 5:
-            case 6:
                 handleSearch();
                 break;
             
-            case 7:
+            case 5:
                 handleDisplayTree();
                 break;
             
-            case 8:
+            case 6:
                 handleChangeDirectory();
                 break;
             
-            case 9:
+            case 7:
                 handleShowPath();
-                break;
-            
-            case 10:
-                handleListDirectory();
                 break;
             
             case 0:
@@ -1101,7 +840,7 @@ int main() {
                 return 0;
             
             default:
-                printf("❌ Invalid choice! Please enter a number between 0 and 10.\n");
+                printf("❌ Invalid choice! Please enter a number between 0 and 7.\n");
         }
         
         // Pause before showing menu again
